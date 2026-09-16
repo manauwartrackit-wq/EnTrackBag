@@ -29,9 +29,27 @@
     <div class="workspace-wrapper">
       <header class="utility-topbar">
         <div class="user-action-tray">
-          <button class="icon-button" type="button" aria-label="Notifications">♧<span>12</span></button>
-          <div class="profile-pill"><div class="avatar-circle">{{ userInitial }}</div><div><strong>{{ displayName }}</strong><small>Super Admin</small></div></div>
-          <button class="logout-button" type="button" (click)="logout()" title="Sign out">↪</button>
+          <button class="icon-button" type="button" aria-label="Notifications" (click)="notifications.refresh()" [attr.title]="notifications.count() ? notifications.count() + ' SLA notifications' : 'No notifications'">
+            <img [src]="notifications.count() ? 'assets/notification-active.png' : 'assets/notification-empty.png'" alt="">
+            @if (notifications.count()) { <span>{{ notifications.count() > 99 ? '99+' : notifications.count() }}</span> }
+          </button>
+          <div class="profile-pill"><div class="avatar-circle">{{ userInitial }}</div><div><strong>{{ displayName }}</strong><small>{{ roleLabel }}</small></div></div>
+          <div class="account-menu-wrap" (click)="$event.stopPropagation()">
+            <button class="settings-button" type="button" (click)="toggleAccountMenu($event)" title="Account settings" [attr.aria-expanded]="accountMenuOpen">
+              <img src="assets/gear.png" alt="Account settings">
+            </button>
+            @if (accountMenuOpen) {
+              <section class="account-menu" aria-label="Signed-in user details">
+                <div class="account-menu-heading"><span class="avatar-circle large">{{ userInitial }}</span><div><strong>{{ displayName }}</strong><small>{{ roleLabel }}</small></div></div>
+                <dl>
+                  <div><dt>User name</dt><dd>{{ auth.getUserName() }}</dd></div>
+                  <div><dt>Session ID</dt><dd>{{ auth.getSessionId() }}</dd></div>
+                  <div><dt>Session expires</dt><dd>{{ sessionExpiry }}</dd></div>
+                </dl>
+                <button class="menu-logout" type="button" (click)="logout()"><span>↪</span> Sign out</button>
+              </section>
+            }
+          </div>
         </div>
       </header>
       <main class="page-shell-viewport"><router-outlet></router-outlet></main>
