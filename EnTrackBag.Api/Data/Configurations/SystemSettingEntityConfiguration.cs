@@ -8,5 +8,8 @@ public class SystemSettingEntityConfiguration : IEntityTypeConfiguration<SystemS
     {
         e.ToTable("SystemSettings", "dbo");
         e.HasKey(x => x.ID);
+        e.Property(x => x.ID).ValueGeneratedNever();
+        e.Property(x => x.SettingName).HasMaxLength(50);
+        e.Property(x => x.SettingValue).HasMaxLength(500);
     }
 }

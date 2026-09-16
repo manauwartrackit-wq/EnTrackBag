@@ -23,3 +23,5 @@ Role matrix:
 - Admin: all pages VIEW including Administration; Users VIEW/CREATE/EDIT/DELETE; Roles VIEW/EDIT; Sessions and Audit Log VIEW.
 
 After installation, scaffold the tables with EF Core Database-First and verify the generated types against the live database. No migrations, `EnsureCreated()`, or `Database.Migrate()` are used.
+
+The separately supplied `EnTrackBag-Identity-Exception-AccessTypes-Final-INT.sql` matches these application-owned tables and also inserts the initial Admin account. Its seeded password payload uses the confirmed legacy AES layout. Identity.Api accepts that format only as a compatibility bridge and replaces it with ASP.NET Core `PasswordHasher` format immediately after a successful login. New and reset passwords are never reversibly encrypted.

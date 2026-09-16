@@ -1,119 +1,40 @@
-<!-- CONDITION A: If the user is on the login screen, ONLY show the raw login card view without layout elements -->
 @if (isLoginView()) {
   <router-outlet></router-outlet>
-}
-
-<!-- CONDITION B: Once authenticated and on operational pages, dynamically clamp the full Sidebar and Header wrapper shell -->
-@else {
+} @else {
   <div class="app-container">
-    <!-- LEFT SIDEBAR: Static Navigation Panel -->
     <aside class="sidebar">
       <div class="brand-logo">
-        <div class="logo-icon">🔷</div>
-        <div>
-          <h2>EnTrackBag</h2>
-          <small>Abu Dhabi Airport</small>
-        </div>
+        <div class="logo-icon"><img src="assets/entrackbag-logo.png" alt="EnTrackBag logo"></div>
+        <div><h2>EnTrackBag</h2><small>Abu Dhabi Airport</small></div>
       </div>
 
-      <nav class="sidebar-menu">
-        <div class="menu-group open">
-          <button class="menu-header">📋 Dashboard</button>
+      <nav class="sidebar-menu" aria-label="Main navigation">
+        <div class="menu-group">
+          <div class="menu-header"><span class="nav-icon">⌂</span><strong>Dashboard</strong><span class="chevron">⌃</span></div>
           <div class="submenu">
-            <a
-              routerLink="/dashboard/summary"
-              routerLinkActive="active"
-              class="submenu-item"
-              >Dashboard</a
-            >
-            <a
-              routerLink="/dashboard/sla"
-              routerLinkActive="active"
-              class="submenu-item"
-              >SLA</a
-            >
+            @if (auth.hasPermission('Dashboard.View')) { <a routerLink="/dashboard/summary" routerLinkActive="active"><i></i>Summary</a> }
+            @if (auth.hasPermission('Dashboard.SLA.View')) { <a routerLink="/dashboard/sla" routerLinkActive="active"><i></i>SLA</a> }
           </div>
         </div>
-
-        <a routerLink="/tracking" class="menu-link">🔍 Tag / Bag Tracking</a>
-        <a routerLink="/reports" class="menu-link">📄 Reports</a>
-        <a routerLink="/settings" class="menu-link">⚙️ System Settings</a>
-        <a routerLink="/administration" class="menu-link">👤 Administration</a>
+        @if (auth.hasPermission('BagJourney.View')) { <a routerLink="/bag-journey" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌗</span>Tag / Bag Tracking</a> }
+        @if (auth.hasPermission('TagReport.View')) { <a routerLink="/tag-report" routerLinkActive="active" class="menu-link"><span class="nav-icon">▤</span>Reports</a> }
+        @if (auth.hasPermission('DeviceStatus.View')) { <a routerLink="/device-status" routerLinkActive="active" class="menu-link"><span class="nav-icon">⚙</span>Device &amp; System Status</a> }
+        @if (auth.hasPermission('Administration.View')) { <a routerLink="/bag-journey-configuration" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌘</span>Bag Journey Configuration</a> }
+        @if (auth.hasPermission('Administration.View')) { <a routerLink="/administration" routerLinkActive="active" class="menu-link"><span class="nav-icon">♙</span>Administration</a> }
       </nav>
 
-      <div class="language-toggle">
-        <button class="lang-btn active">EN</button>
-        <button class="lang-btn">العربية</button>
-      </div>
+      <div class="language-toggle"><button class="active" type="button">EN</button><button type="button">العربية</button></div>
     </aside>
 
-    <!-- RIGHT CONTAINER: Utility Topbar Header + Dynamic Subpage Viewport -->
     <div class="workspace-wrapper">
       <header class="utility-topbar">
-        <div class="page-title-context">
-          <h1>Dashboard</h1>
-          <p>Daily overview of baggage processing and system activity</p>
-        </div>
-
         <div class="user-action-tray">
-          <div class="date-badge">📅 May 27, 2025</div>
-          <button class="action-circle-btn">🔄</button>
-          <div class="bell-alert-badge">
-            🔔 <span class="badge-count">12</span>
-          </div>
-
-          <div class="profile-pill">
-            <div class="avatar-circle">A</div>
-            <div class="profile-info">
-              <strong>Admin</strong>
-              <small>Super Admin</small>
-            </div>
-          </div>
+          <button class="icon-button" type="button" aria-label="Notifications">♧<span>12</span></button>
+          <div class="profile-pill"><div class="avatar-circle">{{ userInitial }}</div><div><strong>{{ displayName }}</strong><small>Super Admin</small></div></div>
+          <button class="logout-button" type="button" (click)="logout()" title="Sign out">↪</button>
         </div>
       </header>
-
-      <!-- The inner target pages (like summary-dashboard.html) automatically mount right inside here safely -->
-      <main class="page-shell-viewport">
-        <router-outlet></router-outlet>
-      </main>
+      <main class="page-shell-viewport"><router-outlet></router-outlet></main>
     </div>
   </div>
 }
-
-<!-- <header class="topbar">
-  <div class="brand">EnTrackBag</div>
-  <nav>
-    <a
-      *ngIf="auth.hasPermission('Dashboard.View')"
-      routerLink="/dashboard/summary"
-      routerLinkActive="active"
-      >Dashboard</a
-    ><a
-      *ngIf="auth.hasPermission('Dashboard.SLA.View')"
-      routerLink="/dashboard/sla"
-      routerLinkActive="active"
-      >SLA</a
-    ><a
-      *ngIf="auth.hasPermission('DeviceStatus.View')"
-      routerLink="/device-status"
-      routerLinkActive="active"
-      >Device &amp; System Status</a
-    ><a
-      *ngIf="auth.hasPermission('TagReport.View')"
-      routerLink="/tag-report"
-      routerLinkActive="active"
-      >Tag Report</a
-    ><a
-      *ngIf="auth.hasPermission('BagJourney.View')"
-      routerLink="/bag-journey"
-      routerLinkActive="active"
-      >Bag Journey</a
-    ><a
-      *ngIf="auth.hasPermission('Administration.View')"
-      routerLink="/administration"
-      routerLinkActive="active"
-      >Administration</a
-    >
-  </nav>
-</header>
-<main class="page-shell"><router-outlet></router-outlet></main> -->

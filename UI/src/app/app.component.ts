@@ -23,4 +23,17 @@ export class AppComponent {
   public isLoginView(): boolean {
     return this._router.url === "/login" || this._router.url === "/";
   }
+
+  public get displayName(): string {
+    return localStorage.getItem("display_name") || localStorage.getItem("user_name") || "Admin";
+  }
+
+  public get userInitial(): string {
+    return this.displayName.trim().charAt(0).toUpperCase() || "A";
+  }
+
+  public logout(): void {
+    this.auth.logout();
+    void this._router.navigate(["/login"]);
+  }
 }

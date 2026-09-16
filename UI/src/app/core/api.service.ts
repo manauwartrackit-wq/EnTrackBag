@@ -16,6 +16,10 @@ export class ApiService {
     return this.http.post<TResponse>(this.toUrl(path), body);
   }
 
+  put<TResponse, TRequest>(path: string, body: TRequest): Observable<TResponse> {
+    return this.http.put<TResponse>(this.toUrl(path), body);
+  }
+
   private toUrl(path: string): string {
     if (/^https?:\/\//i.test(path)) return path;
     return `${this.baseUrl}/${path.replace(/^\/+/, "")}`;

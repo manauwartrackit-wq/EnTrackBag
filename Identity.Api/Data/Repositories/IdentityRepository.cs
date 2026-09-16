@@ -20,7 +20,6 @@ public class IdentityRepository : IIdentityRepository
         return await _identityDbContext.Users
             .Include(u => u.UserRoles)      // Force-loads the user-role mapping bridge
                 .ThenInclude(ur => ur.Role) // Force-loads the actual Role name metadata
-            .AsNoTracking()
             .SingleOrDefaultAsync(u => u.UserName == userName, ct);
     }
 

@@ -285,6 +285,13 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Local SDK, package-manager, Angular and build caches
+.dotnet-cli-home/
+.nuget-packages/
+UI/.angular/
+UI/.npm-cache/
+UI/dist/
+
 # Visual Studio 6 build log
 *.plg
 

@@ -16,9 +16,11 @@ builder.Services.AddDbContext<BltsmftDbContext>(o => o.UseSqlServer(builder.Conf
 builder.Services.AddScoped<IReaderRepository, ReaderRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<ISlaRepository, SlaRepository>();
+builder.Services.AddScoped<IBagJourneyConfigurationRepository, BagJourneyConfigurationRepository>();
 builder.Services.AddScoped<IDashboardDomainComponent, DashboardDomainComponent>();
 builder.Services.AddScoped<ISlaDomainComponent, SlaDomainComponent>();
 builder.Services.AddScoped<IDeviceStatusDomainComponent, DeviceStatusDomainComponent>();
+builder.Services.AddScoped<IBagJourneyConfigurationDomainComponent, BagJourneyConfigurationDomainComponent>();
 
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
@@ -64,18 +66,9 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 
-    options.AddAccessPolicy("Dashboard.View", "VIEW");     // Maps to [Authorize(Policy = "Dashboard.View")]
-    options.AddAccessPolicy("Dashboard.SLA.View", "VIEW"); // Maps to [Authorize(Policy = "Dashboard.SLA.View")]
-    options.AddAccessPolicy("DeviceStatus.View", "VIEW");   // Maps to [Authorize(Policy = "DeviceStatus.View")]
-
-    // Comprehensive Administration CRUD Rules
-    options.AddAccessPolicy("Users.Manage", "VIEW");
-    options.AddAccessPolicy("Users.Manage", "CREATE");
-    options.AddAccessPolicy("Users.Manage", "EDIT");
-    options.AddAccessPolicy("Users.Manage", "DELETE");
-
-    options.AddAccessPolicy("Roles.Manage", "VIEW");
-    options.AddAccessPolicy("Roles.Manage", "EDIT");
+    options.AddAccessPolicy("Dashboard.View", "Dashboard.View");
+    options.AddAccessPolicy("Dashboard.SLA.View", "Dashboard.SLA.View");
+    options.AddAccessPolicy("DeviceStatus.View", "DeviceStatus.View");
 });
 
 var app = builder.Build();

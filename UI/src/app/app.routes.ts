@@ -7,6 +7,7 @@ import { authGuard } from "./core/auth.guard";
 import { TagReportComponent } from "./tag-report/tag-report.component";
 import { BagJourneyComponent } from "./bag-journey/bag-journey.component";
 import { AdministrationComponent } from "./administration/administration.component";
+import { BagJourneyConfigurationComponent } from "./bag-journey-configuration/bag-journey-configuration.component";
 
 export const routes: Routes = [
   { path: "login", component: LoginComponent },
@@ -14,16 +15,19 @@ export const routes: Routes = [
     path: "dashboard/summary",
     component: SummaryComponent,
     canActivate: [authGuard],
+    data: { permission: "Dashboard.View", accessType: "VIEW" },
   },
   {
     path: "dashboard/sla",
     component: SlaComponent,
     canActivate: [authGuard],
+    data: { permission: "Dashboard.SLA.View", accessType: "VIEW" },
   },
   {
     path: "device-status",
     component: DeviceStatusComponent,
     canActivate: [authGuard],
+    data: { permission: "DeviceStatus.View", accessType: "VIEW" },
   },
   {
     path: "tag-report",
@@ -40,6 +44,12 @@ export const routes: Routes = [
   {
     path: "administration",
     component: AdministrationComponent,
+    canActivate: [authGuard],
+    data: { permission: "Administration.View", accessType: "VIEW" },
+  },
+  {
+    path: "bag-journey-configuration",
+    component: BagJourneyConfigurationComponent,
     canActivate: [authGuard],
     data: { permission: "Administration.View", accessType: "VIEW" },
   },

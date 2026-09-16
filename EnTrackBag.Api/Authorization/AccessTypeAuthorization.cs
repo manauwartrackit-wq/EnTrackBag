@@ -29,8 +29,8 @@ public class AccessTypeAuthorizationHandler : AuthorizationHandler<AccessTypeReq
 }
 public static class AuthorizationPolicyExtensions
 {
-    public static void AddAccessPolicy(this AuthorizationOptions options, string permission, string accessType = "VIEW")
+    public static void AddAccessPolicy(this AuthorizationOptions options, string policyName, string permission, string accessType = "VIEW")
     {
-        options.AddPolicy(permission + ":" + accessType, p => p.AddRequirements(new AccessTypeRequirement(permission, accessType)));
+        options.AddPolicy(policyName, p => p.AddRequirements(new AccessTypeRequirement(permission, accessType)));
     }
 }

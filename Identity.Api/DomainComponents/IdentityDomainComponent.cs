@@ -16,7 +16,8 @@ public class IdentityDomainComponent : IIdentityDomainComponent
     private readonly string _jwtKey;
     private readonly string _jwtIssuer;
     private readonly string _jwtAudience;
-    private readonly string _encryptionKey;
+    private readonly IPasswordHasher<UserEntity> _passwordHasher;
+    private readonly string? _legacyEncryptionKey;
 
     // MANDATORY REQUIREMENT: Standard constructor injection layout only (No primary constructors)
     public IdentityDomainComponent(IIdentityRepository identityRepository, IConfiguration configuration, IPasswordHasher<UserEntity> passwordHasher)
@@ -27,7 +28,8 @@ public class IdentityDomainComponent : IIdentityDomainComponent
         _jwtKey = configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
         _jwtIssuer = configuration["Jwt:Issuer"] ?? string.Empty;
         _jwtAudience = configuration["Jwt:Audience"] ?? string.Empty;
-        _encryptionKey = configuration["Security:EncryptionKey"] ?? "MySecretEncryptionKey123!";
+        _passwordHasher = passwordHasher;
+        _legacyEncryptionKey = configuration["Security:EncryptionKey"];
     }
 
     public async Task<LoginResponseDto?> LoginAsync(LoginRequestDto request, string? ip, string? userAgent, string? machineName, CancellationToken ct)
@@ -35,11 +37,23 @@ public class IdentityDomainComponent : IIdentityDomainComponent
         var user = await _identityRepository.GetUserForLoginAsync(request.UserName, ct);
         if (user is null || !user.IsActive)
             return null;
-
-        // OPTIMIZATION: Pass the pre-cached key parameter directly 
-        string decryptedDatabasePassword = DecryptAes256(user.PasswordHash, _encryptionKey);
-        if (request.Password != decryptedDatabasePassword)
+        if (user.LockedUntil.HasValue && user.LockedUntil.Value > DateTime.UtcNow)
             return null;
+
+        var verification = VerifyPasswordHash(user, request.Password);
+        var legacyPasswordAccepted = verification == PasswordVerificationResult.Failed &&
+            (VerifyLegacySha256(user.PasswordHash, request.Password) ||
+             VerifyLegacyAes(user.PasswordHash, request.Password, _legacyEncryptionKey));
+        if (verification == PasswordVerificationResult.Failed && !legacyPasswordAccepted)
+        {
+            user.FailedLoginCount++;
+            user.UpdatedAt = DateTime.UtcNow;
+            await _identityRepository.SaveChangesAsync(ct);
+            return null;
+        }
+
+        if (legacyPasswordAccepted || verification == PasswordVerificationResult.SuccessRehashNeeded)
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         var roles = user.UserRoles.Select(x => x.Role.Name).ToArray();
         var permissionAccess = await _identityRepository.GetPermissionAccessAsync(user.Id, ct);
@@ -58,6 +72,8 @@ public class IdentityDomainComponent : IIdentityDomainComponent
             IsActive = true
         };
         user.LastLoginAt = now;
+        user.FailedLoginCount = 0;
+        user.LockedUntil = null;
 
         await _identityRepository.AddSessionAsync(session, ct);
         await _identityRepository.SaveChangesAsync(ct);
@@ -123,55 +139,47 @@ public class IdentityDomainComponent : IIdentityDomainComponent
         );
     }
 
-    private static string DecryptAes256(string cipherText, string encryptionKey)
+    private static bool VerifyLegacySha256(string storedHash, string password)
     {
-        if (string.IsNullOrEmpty(cipherText))
-            return string.Empty;
-
-        // 1. .Trim() handles trailing spaces from fixed-length SQL columns (e.g. CHAR)
-        byte[] allBytes = Convert.FromBase64String(cipherText.Trim());
-
-        using var aes = Aes.Create();
-        aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(encryptionKey));
-
-        byte[] iv = new byte[16];
-        if (allBytes.Length < iv.Length)
-            throw new CryptographicException("Invalid ciphertext layout formatting length.");
-
-        // 2. OPTIMIZATION: Uses direct system-level memory pointers (much faster than Array.Copy)
-        Buffer.BlockCopy(allBytes, 0, iv, 0, iv.Length);
-        aes.IV = iv;
-
-        // 3. OPTIMIZATION: Uses modern, flat 'using' scopes to drastically cut down nested garbage collection allocations
-        using var ms = new MemoryStream(allBytes, iv.Length, allBytes.Length - iv.Length);
-        using var cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Read);
-        using var sr = new StreamReader(cs, Encoding.UTF8);
-
-        return sr.ReadToEnd();
+        var normalized = storedHash.Trim();
+        if (normalized.Length != 64 || normalized.Any(x => !Uri.IsHexDigit(x))) return false;
+        var expected = Convert.FromHexString(normalized);
+        var actual = SHA256.HashData(Encoding.UTF8.GetBytes(password));
+        return CryptographicOperations.FixedTimeEquals(expected, actual);
     }
 
+    private PasswordVerificationResult VerifyPasswordHash(UserEntity user, string password)
+    {
+        try
+        {
+            return _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
+        }
+        catch (FormatException)
+        {
+            return PasswordVerificationResult.Failed;
+        }
+    }
 
-    //private static string DecryptAes256(string cipherText, string encryptionKey)
-    //{
-    //    if (string.IsNullOrEmpty(cipherText))
-    //        return string.Empty;
+    private static bool VerifyLegacyAes(string storedValue, string password, string? encryptionKey)
+    {
+        if (string.IsNullOrWhiteSpace(storedValue) || string.IsNullOrWhiteSpace(encryptionKey)) return false;
+        try
+        {
+            var payload = Convert.FromBase64String(storedValue.Trim());
+            if (payload.Length <= 16) return false;
 
-    //    byte[] allBytes = Convert.FromBase64String(cipherText.Trim());
-    //    using Aes aes = Aes.Create();
-    //    aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(encryptionKey));
-
-    //    byte[] iv = new byte[16];
-    //    if (allBytes.Length < iv.Length)
-    //        throw new CryptographicException("Invalid ciphertext layout formatting length.");
-
-    //    Array.Copy(allBytes, 0, iv, 0, iv.Length);
-    //    aes.IV = iv;
-
-    //    using MemoryStream ms = new MemoryStream(allBytes, iv.Length, allBytes.Length - iv.Length);
-    //    using ICryptoTransform decryptor = aes.CreateDecryptor();
-    //    using CryptoStream cs = new CryptoStream(ms, decryptor, CryptoStreamMode.Read);
-    //    using StreamReader sr = new StreamReader(cs, Encoding.UTF8);
-
-    //    return sr.ReadToEnd();
-    //}
+            using var aes = Aes.Create();
+            aes.Key = SHA256.HashData(Encoding.UTF8.GetBytes(encryptionKey));
+            aes.IV = payload[..16];
+            using var decryptor = aes.CreateDecryptor();
+            var clearBytes = decryptor.TransformFinalBlock(payload, 16, payload.Length - 16);
+            var suppliedBytes = Encoding.UTF8.GetBytes(password);
+            return clearBytes.Length == suppliedBytes.Length &&
+                   CryptographicOperations.FixedTimeEquals(clearBytes, suppliedBytes);
+        }
+        catch (Exception ex) when (ex is FormatException or CryptographicException)
+        {
+            return false;
+        }
+    }
 }
