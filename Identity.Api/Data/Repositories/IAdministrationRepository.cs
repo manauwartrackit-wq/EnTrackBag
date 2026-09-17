@@ -9,6 +9,7 @@ public interface IAdministrationRepository
     Task<PermissionEntity[]> GetPermissionsAsync(CancellationToken ct);
     Task<AccessTypeEntity[]> GetAccessTypesAsync(CancellationToken ct);
     Task<UserSessionEntity[]> GetSessionsAsync(int take, CancellationToken ct);
+    Task<int> GetActiveSessionCountAsync(CancellationToken ct);
     Task<AuditEventEntity[]> GetAuditEventsAsync(int take, CancellationToken ct);
     Task AddAuditEventAsync(AuditEventEntity auditEvent, CancellationToken ct);
     Task SaveChangesAsync(CancellationToken ct);

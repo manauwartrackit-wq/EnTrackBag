@@ -10,6 +10,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<EnTrackBag.Sessions.SessionRepository>();
+builder.Services.AddHostedService<EnTrackBag.Sessions.SessionExpiryWorker>();
 builder.Host.UseWindowsService();
 builder.Services.AddDbContext<IdentityDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("BLTSMFT")));
 
@@ -42,21 +44,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateAudience = !string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Audience"]),
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.FromMinutes(1)
+        ClockSkew = TimeSpan.Zero
     });
+
+builder.Services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+    options.Events.OnTokenValidated = EnTrackBag.Sessions.SessionRepository.ValidateTokenAsync);
 
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("Administration.View", policy => policy.RequireClaim("permission_access", "Administration.View:VIEW"));
-    options.AddPolicy("Users.Manage", policy => policy.RequireClaim("permission_access", "Users.Manage:VIEW"));
-    options.AddPolicy("Users.Create", policy => policy.RequireClaim("permission_access", "Users.Manage:CREATE"));
-    options.AddPolicy("Users.Edit", policy => policy.RequireClaim("permission_access", "Users.Manage:EDIT"));
-    options.AddPolicy("Users.Delete", policy => policy.RequireClaim("permission_access", "Users.Manage:DELETE"));
-    options.AddPolicy("Users.Sensitive.View", policy => policy.RequireRole("Admin").RequireClaim("permission_access", "Users.Manage:VIEW"));
-    options.AddPolicy("Roles.View", policy => policy.RequireClaim("permission_access", "Roles.Manage:VIEW"));
-    options.AddPolicy("Roles.Edit", policy => policy.RequireClaim("permission_access", "Roles.Manage:EDIT"));
-    options.AddPolicy("Sessions.View", policy => policy.RequireClaim("permission_access", "Sessions.Manage:VIEW"));
-    options.AddPolicy("AuditLog.View", policy => policy.RequireClaim("permission_access", "AuditLog.View:VIEW"));
+    foreach (var permission in EnTrackBag.Authorization.PermissionCodes.All)
+    {
+        options.AddPolicy(permission, policy => policy.RequireAuthenticatedUser().RequireClaim("permission_access", permission + ":" + EnTrackBag.Authorization.AccessTypeCodes.View));
+        foreach (var access in EnTrackBag.Authorization.AccessTypeCodes.All)
+            options.AddPolicy(permission + ":" + access, policy => policy.RequireAuthenticatedUser().RequireClaim("permission_access", permission + ":" + access));
+    }
+    options.AddPolicy("Users.Sensitive", policy => policy.RequireRole("Admin").RequireClaim("permission_access", "Users:VIEW"));
 });
 var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
@@ -65,5 +67,6 @@ app.UseSwaggerUI();
 app.UseCors("ui");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<EnTrackBag.Sessions.SessionActivityMiddleware>();
 app.MapControllers();
 app.Run();

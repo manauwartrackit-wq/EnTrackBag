@@ -2,6 +2,7 @@ namespace Identity.Api.Data.Entities;
 
 public class UserSessionEntity
 {
+    public DateTime LastActivityAt { get; set; }
     public long SessionId
     {
         get; set;

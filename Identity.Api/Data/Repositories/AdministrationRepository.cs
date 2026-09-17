@@ -38,6 +38,14 @@ public class AdministrationRepository : IAdministrationRepository
             .Take(take)
             .ToArrayAsync(ct);
 
+    public Task<int> GetActiveSessionCountAsync(CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var cutoff = now.AddMinutes(-5);
+        return _identityDbContext.UserSessions.CountAsync(x => x.IsActive && x.LogoutAt == null &&
+            x.TokenExpiresAt > now && x.LastActivityAt > cutoff && x.User.IsActive, ct);
+    }
+
     public Task<AuditEventEntity[]> GetAuditEventsAsync(int take, CancellationToken ct) =>
         _identityDbContext.AuditEvents
             .AsNoTracking()

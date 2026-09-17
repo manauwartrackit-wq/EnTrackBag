@@ -2,6 +2,7 @@ import { CommonModule } from "@angular/common";
 import { Component, OnInit, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { ApiService } from "../core/api.service";
+import { AuthService } from "../services/auth.service";
 
 interface JourneyThreshold { code: string; from: string; to: string; normalSeconds: number; delaySeconds: number; }
 interface JourneyConfiguration { currentPrimaryServer: string | null; lastUpdated: string | null; thresholds: JourneyThreshold[]; }
@@ -14,6 +15,7 @@ interface JourneyConfiguration { currentPrimaryServer: string | null; lastUpdate
   styleUrl: "./bag-journey-configuration.component.scss",
 })
 export class BagJourneyConfigurationComponent implements OnInit {
+  readonly auth = inject(AuthService);
   private readonly api = inject(ApiService);
   configuration: JourneyConfiguration | null = null;
   loading = true; saving = false; errorMessage = ""; successMessage = "";
@@ -26,6 +28,7 @@ export class BagJourneyConfigurationComponent implements OnInit {
     });
   }
   save(): void {
+    if (!this.auth.hasAccess('BagJourney.Configuration', 'EDIT')) return;
     if (!this.configuration || this.configuration.thresholds.some(x => x.normalSeconds < 1 || x.delaySeconds < 1)) { this.errorMessage = "Every threshold must be at least one second."; return; }
     this.saving = true; this.errorMessage = ""; this.successMessage = "";
     this.api.put<JourneyConfiguration, { thresholds: JourneyThreshold[] }>("bag-journey-configuration", { thresholds: this.configuration.thresholds }).subscribe({

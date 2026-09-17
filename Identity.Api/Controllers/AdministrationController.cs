@@ -8,7 +8,7 @@ namespace Identity.Api.Controllers;
 
 [ApiController]
 [Route("api/administration")]
-[Authorize(Policy = "Administration.View")]
+[Authorize(Policy = "Administration")]
 public class AdministrationController : ControllerBase
 {
     private readonly IUserDomainComponent _userDomainComponent;
@@ -26,13 +26,13 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpGet("users")]
-    [Authorize(Policy = "Users.Manage")]
+    [Authorize(Policy = "Users")]
     public async Task<ActionResult<UserListItemDto[]>> GetUsers(
         [FromQuery] string? search, [FromQuery] int? roleId, [FromQuery] bool? isActive, CancellationToken ct) =>
         Ok(await _userDomainComponent.GetUsersAsync(search, roleId, isActive, ct));
 
     [HttpGet("users/{id:int}/passport")]
-    [Authorize(Policy = "Users.Sensitive.View")]
+    [Authorize(Policy = "Users.Sensitive")]
     public async Task<ActionResult<PassportDetailDto>> GetPassport(int id, CancellationToken ct)
     {
         var result = await _userDomainComponent.GetPassportAsync(id, CurrentUserId(), CurrentUserName(), ct);
@@ -40,7 +40,7 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpPost("users")]
-    [Authorize(Policy = "Users.Create")]
+    [Authorize(Policy = "Users:CREATE")]
     public async Task<ActionResult<UserListItemDto>> CreateUser(CreateUserRequestDto request, CancellationToken ct)
     {
         try
@@ -53,7 +53,7 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpPut("users/{id:int}/reset-password")]
-    [Authorize(Policy = "Users.Edit")]
+    [Authorize(Policy = "Users:EDIT")]
     public async Task<IActionResult> ResetPassword(int id, ResetUserPasswordRequestDto request, CancellationToken ct)
     {
         try
@@ -65,7 +65,7 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpPut("users/{id:int}")]
-    [Authorize(Policy = "Users.Edit")]
+    [Authorize(Policy = "Users:EDIT")]
     public async Task<ActionResult<UserListItemDto>> UpdateUser(int id, UpdateUserRequestDto request, CancellationToken ct)
     {
         try
@@ -78,7 +78,7 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpDelete("users/{id:int}")]
-    [Authorize(Policy = "Users.Delete")]
+    [Authorize(Policy = "Users:DELETE")]
     public async Task<IActionResult> RemoveUser(int id, CancellationToken ct)
     {
         try
@@ -91,22 +91,22 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpGet("roles")]
-    [Authorize(Policy = "Roles.View")]
+    [Authorize(Policy = "Roles")]
     public async Task<ActionResult<RoleListItemDto[]>> GetRoles(CancellationToken ct) =>
         Ok(await _roleDomainComponent.GetRolesAsync(ct));
 
     [HttpGet("permissions")]
-    [Authorize(Policy = "Roles.View")]
+    [Authorize(Policy = "Roles")]
     public async Task<ActionResult<PermissionOptionDto[]>> GetPermissions(CancellationToken ct) =>
         Ok(await _roleDomainComponent.GetPermissionsAsync(ct));
 
     [HttpGet("access-types")]
-    [Authorize(Policy = "Roles.View")]
+    [Authorize(Policy = "Roles")]
     public async Task<ActionResult<AccessTypeOptionDto[]>> GetAccessTypes(CancellationToken ct) =>
         Ok(await _roleDomainComponent.GetAccessTypesAsync(ct));
 
     [HttpPut("roles/{id:int}/permissions")]
-    [Authorize(Policy = "Roles.Edit")]
+    [Authorize(Policy = "Roles:EDIT")]
     public async Task<ActionResult<RoleListItemDto>> UpdateRolePermissions(
         int id,
         UpdateRolePermissionsRequestDto request,
@@ -121,12 +121,17 @@ public class AdministrationController : ControllerBase
     }
 
     [HttpGet("sessions")]
-    [Authorize(Policy = "Sessions.View")]
+    [Authorize(Policy = "Sessions")]
     public async Task<ActionResult<SessionListItemDto[]>> GetSessions([FromQuery] int take = 100, CancellationToken ct = default) =>
         Ok(await _sessionDomainComponent.GetSessionsAsync(take, ct));
 
+    [HttpGet("sessions/active-count")]
+    [Authorize(Policy = "Sessions")]
+    public async Task<ActionResult<int>> GetActiveSessionCount(CancellationToken ct) =>
+        Ok(await _sessionDomainComponent.GetActiveSessionCountAsync(ct));
+
     [HttpGet("audit-events")]
-    [Authorize(Policy = "AuditLog.View")]
+    [Authorize(Policy = "AuditLog")]
     public async Task<ActionResult<AuditEventListItemDto[]>> GetAuditEvents([FromQuery] int take = 100, CancellationToken ct = default) =>
         Ok(await _sessionDomainComponent.GetAuditEventsAsync(take, ct));
 

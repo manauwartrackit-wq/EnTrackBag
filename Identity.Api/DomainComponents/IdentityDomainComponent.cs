@@ -65,6 +65,7 @@ public class IdentityDomainComponent : IIdentityDomainComponent
         {
             UserId = user.Id,
             LoginAt = now,
+            LastActivityAt = now,
             RemoteIp = ip,
             UserAgent = userAgent,
             TokenIssuedAt = now,

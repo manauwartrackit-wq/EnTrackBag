@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup><TargetFramework>net10.0</TargetFramework><AssemblyName>Identity.Api</AssemblyName><RootNamespace>Identity.Api</RootNamespace><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings></PropertyGroup>
   <ItemGroup>
     <Content Include="Properties\launchSettings.json" />
@@ -10,4 +10,6 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="10.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="7.3.1" />
   </ItemGroup>
+  <ItemGroup><Compile Include="../Shared/AuthorizationCodes.cs" Link="Authorization/AuthorizationCodes.cs" /></ItemGroup>
+  <ItemGroup><Compile Include="../Shared/SessionRepository.cs" Link="Sessions/SessionRepository.cs" /></ItemGroup>
 </Project>

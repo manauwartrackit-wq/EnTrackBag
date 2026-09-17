@@ -9,8 +9,8 @@ export class NotificationService {
   readonly count = signal(0);
 
   refresh(): void {
-    if (!this.auth.hasPermission("Dashboard.SLA.View")) { this.clear(); return; }
-    this.api.get<{ breached?: boolean }[]>("dashboard/sla").subscribe({
+    if (!this.auth.hasPermission("Dashboard.SLA")) { this.clear(); return; }
+    this.api.get<{ breached?: boolean }[]>("dashboard/sla", true).subscribe({
       next: (bags) => this.setCount((bags ?? []).filter((bag) => bag.breached).length),
       error: () => this.clear(),
     });

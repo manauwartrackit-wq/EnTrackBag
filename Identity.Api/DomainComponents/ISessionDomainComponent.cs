@@ -5,6 +5,6 @@ namespace Identity.Api.DomainComponents;
 public interface ISessionDomainComponent
 {
     Task<SessionListItemDto[]> GetSessionsAsync(int take, CancellationToken ct);
+    Task<int> GetActiveSessionCountAsync(CancellationToken ct);
     Task<AuditEventListItemDto[]> GetAuditEventsAsync(int take, CancellationToken ct);
 }
-

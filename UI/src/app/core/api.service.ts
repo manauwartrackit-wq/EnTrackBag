@@ -1,5 +1,6 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpContext } from "@angular/common/http";
+import { BACKGROUND_REQUEST } from "./request-activity";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
 
@@ -8,8 +9,8 @@ export class ApiService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.apiUrl;
 
-  get<T>(path: string): Observable<T> {
-    return this.http.get<T>(this.toUrl(path));
+  get<T>(path: string, background = false): Observable<T> {
+    return this.http.get<T>(this.toUrl(path), { context: new HttpContext().set(BACKGROUND_REQUEST, background) });
   }
 
   post<TResponse, TRequest>(path: string, body: TRequest): Observable<TResponse> {

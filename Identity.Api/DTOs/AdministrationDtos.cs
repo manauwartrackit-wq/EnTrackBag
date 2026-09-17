@@ -94,7 +94,10 @@ public sealed record SessionListItemDto(
     string? RemoteIp,
     string? UserAgent,
     DateTime? TokenExpiresAt,
-    bool IsActive);
+    bool IsActive,
+    DateTime LastActivityAt,
+    DateTime IdleExpiresAt,
+    string Status);
 
 public sealed record AuditEventListItemDto(
     long Id,

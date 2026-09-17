@@ -32,7 +32,20 @@ public class IdentityRepository : IIdentityRepository
         .Distinct()
         .ToArrayAsync(ct);
 
-    public async Task AddSessionAsync(UserSessionEntity session, CancellationToken ct) => await _identityDbContext.UserSessions.AddAsync(session, ct);
+    public async Task AddSessionAsync(UserSessionEntity session, CancellationToken ct)
+    {
+        await using var transaction = await _identityDbContext.Database.BeginTransactionAsync(ct);
+        // Serialize concurrent logins for this user before revoking/inserting.
+        await _identityDbContext.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT Id FROM dbo.Users WITH (UPDLOCK, HOLDLOCK) WHERE Id={session.UserId}", ct);
+        await _identityDbContext.UserSessions.Where(x => x.UserId == session.UserId && x.IsActive)
+            .ExecuteUpdateAsync(set => set.SetProperty(x => x.IsActive, false)
+                .SetProperty(x => x.LogoutAt, session.LoginAt)
+                .SetProperty(x => x.LogoutReason, "Revoked"), ct);
+        await _identityDbContext.UserSessions.AddAsync(session, ct);
+        await _identityDbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+    }
     public async Task AddAuditEventAsync(AuditEventEntity auditEvent, CancellationToken ct) => await _identityDbContext.AuditEvents.AddAsync(auditEvent, ct);
     public Task SaveChangesAsync(CancellationToken ct) => _identityDbContext.SaveChangesAsync(ct);
 }

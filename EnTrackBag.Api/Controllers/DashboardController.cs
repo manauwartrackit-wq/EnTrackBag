@@ -5,7 +5,7 @@ namespace EnTrackBag.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-[Authorize(Policy = "Dashboard.View")]
+[Authorize]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardDomainComponent _dashboardDomainComponent;
@@ -18,13 +18,15 @@ public class DashboardController : ControllerBase
     }
 
     [HttpGet("kpis")]
+    [Authorize(Policy = "Dashboard")]
     public async Task<IActionResult> GetKpis(CancellationToken ct) => Ok(await _dashboardDomainComponent.GetKpisAsync(ct));
 
     [HttpGet("sla")]
-    [Authorize(Policy = "Dashboard.SLA.View")]
+    [Authorize(Policy = "Dashboard.SLA")]
     public async Task<IActionResult> GetSla(CancellationToken ct) => Ok(await _slaDomainComponent.GetSlaAsync(ct));
 
     [HttpGet("bags/{bagId}/history")]
+    [Authorize(Policy = "BagHistory")]
     public async Task<IActionResult> GetHistory(string bagId, CancellationToken ct)
     {
         var result = await _dashboardDomainComponent.GetHistoryAsync(bagId, ct);

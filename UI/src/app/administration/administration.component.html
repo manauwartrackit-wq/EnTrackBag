@@ -35,7 +35,7 @@
         <div class="search-box"><span>⌕</span><input [(ngModel)]="searchTerm" placeholder="Search code, name, username or email" aria-label="Search users"></div>
         <select [(ngModel)]="roleFilter" aria-label="Filter by role"><option value="">All roles</option>@for (role of roles; track role.id) { <option [value]="role.id">{{ role.name }}</option> }</select>
         <select [(ngModel)]="statusFilter" aria-label="Filter by status"><option value="">All statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select>
-        @if (auth.hasPermission('Users.Manage', 'CREATE')) { <button class="primary-button" type="button" (click)="openCreateUser()"><span>＋</span> Add user</button> }
+        @if (auth.hasAccess('Users', 'CREATE')) { <button class="primary-button" type="button" (click)="openCreateUser()"><span>＋</span> Add user</button> }
       </div>
       <div class="table-wrap">
         <table>
@@ -49,9 +49,9 @@
                 <td><span class="status" [class.inactive]="!user.isActive"><i></i>{{ user.isActive ? 'Active' : 'Inactive' }}</span></td>
                 <td>{{ formatDate(user.lastLoginAt) }}</td>
                 <td class="row-actions">
-                  @if (auth.hasPermission('Users.Manage', 'EDIT')) { <button type="button" title="Edit user" (click)="openEditUser(user)">✎</button> }
-                  @if (auth.hasPermission('Users.Manage', 'EDIT')) { <button type="button" title="Reset password" (click)="resetPassword(user)">⌘</button> }
-                  @if (auth.hasPermission('Users.Manage', 'DELETE')) { <button class="danger" type="button" title="Remove user" (click)="removeUser(user)">⌫</button> }
+                  @if (auth.hasAccess('Users', 'EDIT')) { <button type="button" title="Edit user" (click)="openEditUser(user)">✎</button> }
+                  @if (auth.hasAccess('Users', 'EDIT')) { <button type="button" title="Reset password" (click)="resetPassword(user)">⌘</button> }
+                  @if (auth.hasAccess('Users', 'DELETE')) { <button class="danger" type="button" title="Remove user" (click)="removeUser(user)">⌫</button> }
                 </td>
               </tr>
             } @empty { <tr><td colspan="8"><div class="empty-state">No users match your filters.</div></td></tr> }
@@ -72,11 +72,11 @@
         <div class="permission-panel">
           @if (selectedRole) {
             <div class="permission-heading"><div><h2>{{ selectedRole.name }}</h2><p>Choose the allowed access types for each page or capability.</p></div>
-              @if (auth.hasPermission('Roles.Manage', 'EDIT')) { <button class="primary-button" type="button" (click)="saveRolePermissions()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save changes' }}</button> }
+              @if (auth.hasAccess('Roles', 'EDIT')) { <button class="primary-button" type="button" (click)="saveRolePermissions()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save changes' }}</button> }
             </div>
             <div class="permission-table-wrap"><table class="permission-table"><thead><tr><th>Permission</th>@for (access of accessTypes; track access.id) { <th>{{ access.name }}</th> }</tr></thead>
               <tbody>@for (permission of permissions; track permission.id) { <tr><td><strong>{{ permission.name }}</strong><small>{{ permission.code }}</small></td>
-                @for (access of accessTypes; track access.id) { <td><input type="checkbox" [checked]="hasRolePermission(permission.id, access.id)" (change)="toggleRolePermission(permission.id, access.id, $any($event.target).checked)" [disabled]="!auth.hasPermission('Roles.Manage', 'EDIT')"></td> }
+                @for (access of accessTypes; track access.id) { <td><input type="checkbox" [checked]="hasRolePermission(permission.id, access.id)" (change)="toggleRolePermission(permission.id, access.id, $any($event.target).checked)" [disabled]="!auth.hasAccess('Roles', 'EDIT')"></td> }
               </tr> }</tbody></table></div>
           }
         </div>
@@ -84,7 +84,7 @@
     } @else if (activeTab === 'sessions') {
       <div class="section-intro"><div><h2>User sessions</h2><p>Latest authentication sessions recorded by the Identity API.</p></div></div>
       <div class="table-wrap"><table><thead><tr><th>User</th><th>Signed in</th><th>Token expires</th><th>IP address</th><th>Status</th></tr></thead><tbody>
-        @for (session of sessions; track session.sessionId) { <tr><td><div class="user-cell"><span class="avatar small">{{ initials(session.displayName) }}</span><div><strong>{{ session.displayName }}</strong><small>{{ session.userName }}</small></div></div></td><td>{{ formatDate(session.loginAt) }}</td><td>{{ formatDate(session.tokenExpiresAt) }}</td><td><code>{{ session.remoteIp ?? '—' }}</code></td><td><span class="status" [class.inactive]="!session.isActive"><i></i>{{ session.isActive ? 'Active' : 'Closed' }}</span></td></tr> }
+        @for (session of sessions; track session.sessionId) { <tr><td><div class="user-cell"><span class="avatar small">{{ initials(session.displayName) }}</span><div><strong>{{ session.displayName }}</strong><small>{{ session.userName }}</small></div></div></td><td>{{ formatDate(session.loginAt) }}</td><td>{{ formatDate(session.tokenExpiresAt) }}</td><td><code>{{ session.remoteIp ?? '—' }}</code></td><td><span class="status" [class.inactive]="!session.isActive" [title]="'Last activity: ' + formatDate(session.lastActivityAt) + ' | Ended: ' + formatDate(session.logoutAt)"><i></i>{{ session.status }}</span></td></tr> }
         @empty { <tr><td colspan="5"><div class="empty-state">No sessions have been recorded.</div></td></tr> }
       </tbody></table></div>
     } @else {

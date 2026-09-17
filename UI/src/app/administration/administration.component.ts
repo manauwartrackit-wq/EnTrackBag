@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { Component, OnInit, inject } from "@angular/core";
+import { Component, OnInit, OnDestroy, inject } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { forkJoin } from "rxjs";
 import { AuthService } from "../services/auth.service";
@@ -18,7 +18,9 @@ interface UserFormModel { empCode: string; userName: string; firstName: string; 
   templateUrl: "./administration.component.html",
   styleUrl: "./administration.component.scss",
 })
-export class AdministrationComponent implements OnInit {
+export class AdministrationComponent implements OnInit, OnDestroy {
+  activeSessions = 0;
+  private refreshTimer?: ReturnType<typeof setInterval>;
   private readonly administration = inject(AdministrationService);
   readonly auth = inject(AuthService);
   activeTab: AdministrationTab = "users";
@@ -40,9 +42,17 @@ export class AdministrationComponent implements OnInit {
   editingUser: AdministrationUser | null = null;
   userForm: UserFormModel = this.emptyUserForm();
 
-  ngOnInit(): void { this.loadAdministration(); }
+  ngOnInit(): void {
+    this.loadAdministration();
+    this.refreshTimer = setInterval(() => this.refreshSessions(), 10000);
+  }
+  ngOnDestroy(): void { if (this.refreshTimer) clearInterval(this.refreshTimer); }
+  private refreshSessions(): void {
+    if (!this.auth.hasPermission("Sessions")) return;
+    forkJoin({ sessions: this.administration.getSessions(), count: this.administration.getActiveSessionCount() })
+      .subscribe({ next: result => { this.sessions = result.sessions; this.activeSessions = result.count; }, error: () => {} });
+  }
   get activeUsers(): number { return this.users.filter((user) => user.isActive).length; }
-  get activeSessions(): number { return this.sessions.filter((session) => session.isActive).length; }
   get filteredUsers(): AdministrationUser[] {
     const term = this.searchTerm.trim().toLocaleLowerCase();
     if (!term) return this.users;
@@ -61,10 +71,12 @@ export class AdministrationComponent implements OnInit {
       users: this.administration.getUsers(), roles: this.administration.getRoles(),
       permissions: this.administration.getPermissions(), accessTypes: this.administration.getAccessTypes(),
       sessions: this.administration.getSessions(), auditEvents: this.administration.getAuditEvents(),
+      activeSessionCount: this.administration.getActiveSessionCount(),
     }).subscribe({
       next: (result) => {
         this.users = result.users; this.roles = result.roles; this.permissions = result.permissions;
         this.accessTypes = result.accessTypes; this.sessions = result.sessions; this.auditEvents = result.auditEvents;
+        this.activeSessions = result.activeSessionCount;
         this.selectedRole = this.roles[0] ?? null; this.loading = false;
       },
       error: (error) => {

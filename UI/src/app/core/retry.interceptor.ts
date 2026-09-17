@@ -5,6 +5,7 @@ import {
 import { timer, throwError } from "rxjs";
 import { retry } from "rxjs/operators";
 import { environment } from "../../environments/environment";
+import { BACKGROUND_REQUEST } from "./request-activity";
 
 function isRetryable(error: unknown): boolean {
   if (!(error instanceof HttpErrorResponse)) return false;
@@ -13,6 +14,9 @@ function isRetryable(error: unknown): boolean {
 }
 
 export const retryInterceptor: HttpInterceptorFn = (req, next) => {
+  // Replaying login can create/revoke sessions after a transient response failure.
+  // Never automatically retry writes or foreground activity requests.
+  if (req.method !== "GET" || !req.context.get(BACKGROUND_REQUEST)) return next(req);
   return next(req).pipe(
     retry({
       count: environment.apiRetryCount,

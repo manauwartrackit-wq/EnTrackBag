@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<EnTrackBag.Sessions.SessionRepository>();
 builder.Host.UseWindowsService();
 builder.Services.AddDbContext<BltsmftDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("BLTSMFT")));
 
@@ -45,10 +46,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = !string.IsNullOrWhiteSpace(builder.Configuration["Jwt:Audience"]),
             ValidAudience = builder.Configuration["Jwt:Audience"],
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1)
+            ClockSkew = TimeSpan.Zero
         };
         o.Events = new JwtBearerEvents
         {
+            OnTokenValidated = EnTrackBag.Sessions.SessionRepository.ValidateTokenAsync,
             OnMessageReceived = context =>
             {
                 var token = context.Request.Query["access_token"];
@@ -66,9 +68,15 @@ builder.Services.AddAuthorization(options =>
         .RequireAuthenticatedUser()
         .Build();
 
-    options.AddAccessPolicy("Dashboard.View", "Dashboard.View");
-    options.AddAccessPolicy("Dashboard.SLA.View", "Dashboard.SLA.View");
-    options.AddAccessPolicy("DeviceStatus.View", "DeviceStatus.View");
+    foreach (var permission in EnTrackBag.Authorization.PermissionCodes.All)
+    {
+        options.AddAccessPolicy(permission, permission);
+        foreach (var access in EnTrackBag.Authorization.AccessTypeCodes.All)
+            options.AddAccessPolicy(permission + ":" + access, permission, access);
+    }
+    options.AddPolicy("BagHistory", policy => policy.RequireAuthenticatedUser().RequireAssertion(context =>
+        context.User.Claims.Any(c => c.Type == "permission_access" &&
+            new[] { "Dashboard:VIEW", "Dashboard.SLA:VIEW", "BagJourney:VIEW" }.Contains(c.Value))));
 });
 
 var app = builder.Build();
@@ -78,6 +86,7 @@ app.UseSwaggerUI();
 app.UseCors("ui");
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseMiddleware<EnTrackBag.Sessions.SessionActivityMiddleware>();
 app.MapControllers();
 app.MapHub<MonitoringHub>("/hubs/monitoring");
 app.Run();

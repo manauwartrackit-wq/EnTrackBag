@@ -12,15 +12,15 @@
         <div class="menu-group">
           <div class="menu-header"><span class="nav-icon">⌂</span><strong>Dashboard</strong><span class="chevron">⌃</span></div>
           <div class="submenu">
-            @if (auth.hasPermission('Dashboard.View')) { <a routerLink="/dashboard/summary" routerLinkActive="active"><i></i>Summary</a> }
-            @if (auth.hasPermission('Dashboard.SLA.View')) { <a routerLink="/dashboard/sla" routerLinkActive="active"><i></i>SLA</a> }
+            @if (auth.hasPermission('Dashboard')) { <a routerLink="/dashboard/summary" routerLinkActive="active"><i></i>Summary</a> }
+            @if (auth.hasPermission('Dashboard.SLA')) { <a routerLink="/dashboard/sla" routerLinkActive="active"><i></i>SLA</a> }
           </div>
         </div>
-        @if (auth.hasPermission('BagJourney.View')) { <a routerLink="/bag-journey" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌗</span>Tag / Bag Tracking</a> }
-        @if (auth.hasPermission('TagReport.View')) { <a routerLink="/tag-report" routerLinkActive="active" class="menu-link"><span class="nav-icon">▤</span>Reports</a> }
-        @if (auth.hasPermission('DeviceStatus.View')) { <a routerLink="/device-status" routerLinkActive="active" class="menu-link"><span class="nav-icon">⚙</span>Device &amp; System Status</a> }
-        @if (auth.hasPermission('Administration.View')) { <a routerLink="/bag-journey-configuration" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌘</span>Bag Journey Configuration</a> }
-        @if (auth.hasPermission('Administration.View')) { <a routerLink="/administration" routerLinkActive="active" class="menu-link"><span class="nav-icon">♙</span>Administration</a> }
+        @if (auth.hasPermission('BagJourney')) { <a routerLink="/bag-journey" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌗</span>Tag / Bag Tracking</a> }
+        @if (auth.hasPermission('TagReport')) { <a routerLink="/tag-report" routerLinkActive="active" class="menu-link"><span class="nav-icon">▤</span>Reports</a> }
+        @if (auth.hasPermission('DeviceStatus')) { <a routerLink="/device-status" routerLinkActive="active" class="menu-link"><span class="nav-icon">⚙</span>Device &amp; System Status</a> }
+        @if (auth.hasPermission('BagJourney.Configuration')) { <a routerLink="/bag-journey-configuration" routerLinkActive="active" class="menu-link"><span class="nav-icon">⌘</span>Bag Journey Configuration</a> }
+        @if (auth.hasPermission('Administration')) { <a routerLink="/administration" routerLinkActive="active" class="menu-link"><span class="nav-icon">♙</span>Administration</a> }
       </nav>
 
       <div class="language-toggle"><button class="active" type="button">EN</button><button type="button">العربية</button></div>

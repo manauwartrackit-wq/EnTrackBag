@@ -31,6 +31,6 @@ public static class AuthorizationPolicyExtensions
 {
     public static void AddAccessPolicy(this AuthorizationOptions options, string policyName, string permission, string accessType = "VIEW")
     {
-        options.AddPolicy(policyName, p => p.AddRequirements(new AccessTypeRequirement(permission, accessType)));
+        options.AddPolicy(policyName, p => p.RequireAuthenticatedUser().AddRequirements(new AccessTypeRequirement(permission, accessType)));
     }
 }

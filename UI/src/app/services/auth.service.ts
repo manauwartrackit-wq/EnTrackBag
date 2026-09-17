@@ -1,5 +1,7 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpContext } from "@angular/common/http";
+import { NavigationEnd, Router } from "@angular/router";
+import { BACKGROUND_REQUEST } from "../core/request-activity";
 import { Observable, tap } from "rxjs";
 import { environment } from "../../environments/environment";
 
@@ -22,6 +24,75 @@ export interface LoginResponse {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = environment.identityApiUrl;
+  private readonly router = inject(Router);
+  private activityTimer: ReturnType<typeof setTimeout> | undefined;
+  private lastReported = 0;
+  private readonly idleMs = 5 * 60 * 1000;
+
+  constructor() {
+    for (const eventName of ["pointerdown", "keydown", "wheel", "touchstart", "scroll"]) {
+      document.addEventListener(eventName, event => {
+        if (event.isTrusted) this.recordActivity();
+      }, { passive: true, capture: true });
+    }
+    let initialNavigation = true;
+    this.router.events.subscribe(event => {
+      if (!(event instanceof NavigationEnd)) return;
+      if (!initialNavigation && event.urlAfterRedirects !== "/login") this.recordActivity();
+      initialNavigation = false;
+    });
+    window.addEventListener("storage", event => {
+      if (event.key === "access_token" && !event.newValue) this.clearSession();
+    });
+    setInterval(() => this.checkIdle(), 1000);
+    // A status check detects another browser's login but NEVER extends idle time.
+    setInterval(() => this.checkServerSession(), 15000);
+    // Defer until DI has finished creating this service/interceptor.
+    queueMicrotask(() => this.checkServerSession());
+  }
+
+  recordActivity(): void {
+    if (!this.getAccessToken() || this.checkIdle()) return;
+    localStorage.setItem("last_activity_at", String(Date.now()));
+    // Leading/trailing coalescing retains the final event without scroll floods.
+    if (Date.now() - this.lastReported >= 1000) this.reportActivity();
+    else if (!this.activityTimer) this.activityTimer = setTimeout(() => {
+      this.activityTimer = undefined;
+      this.reportActivity();
+    }, 1000);
+  }
+
+  private reportActivity(): void {
+    if (!this.getAccessToken() || this.checkIdle()) return;
+    this.lastReported = Date.now();
+    this.http.post<void>(`${this.baseUrl}/auth/activity`, {}, {
+      headers: { "X-User-Activity": "1" },
+      context: new HttpContext().set(BACKGROUND_REQUEST, true),
+    }).subscribe({ error: () => { /* 401 handled centrally; never retry activity. */ } });
+  }
+
+  private checkServerSession(): void {
+    if (!this.getAccessToken() || this.checkIdle()) return;
+    this.http.get(`${this.baseUrl}/auth/session`, {
+      context: new HttpContext().set(BACKGROUND_REQUEST, true),
+    }).subscribe({ error: () => { /* Failures never renew activity. */ } });
+  }
+
+  private checkIdle(): boolean {
+    if (!this.getAccessToken()) return false;
+    const last = Number(localStorage.getItem("last_activity_at"));
+    const expires = this.getExpiresAt();
+    if (!last || Date.now() - last >= this.idleMs || (expires && Date.parse(expires) <= Date.now())) {
+      this.clearSession();
+      return true;
+    }
+    return false;
+  }
+
+  markRequestActivity(): void {
+    if (this.getAccessToken() && !this.checkIdle())
+      localStorage.setItem("last_activity_at", String(Date.now()));
+  }
 
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http
@@ -38,11 +109,21 @@ export class AuthService {
           localStorage.setItem("roles", JSON.stringify(response.roles ?? []));
           localStorage.setItem("session_id", String(response.sessionId));
           localStorage.setItem("expires_at_utc", response.expiresAtUtc);
+          localStorage.setItem("last_activity_at", String(Date.now()));
         }),
       );
   }
 
   logout(): void {
+    if (this.getAccessToken()) this.http.post<void>(`${this.baseUrl}/auth/logout`, {}, {
+      context: new HttpContext().set(BACKGROUND_REQUEST, true),
+    }).subscribe({ error: () => { /* Offline sessions still expire on the server. */ } });
+    this.clearSession();
+  }
+
+  clearSession(): void {
+    if (this.activityTimer) clearTimeout(this.activityTimer);
+    this.activityTimer = undefined;
     localStorage.removeItem("access_token");
     localStorage.removeItem("permissions");
     localStorage.removeItem("user_name");
@@ -50,6 +131,8 @@ export class AuthService {
     localStorage.removeItem("roles");
     localStorage.removeItem("session_id");
     localStorage.removeItem("expires_at_utc");
+    localStorage.removeItem("last_activity_at");
+    void this.router.navigateByUrl("/login");
   }
 
   getAccessToken(): string | null {
@@ -60,7 +143,11 @@ export class AuthService {
     return !!this.getAccessToken();
   }
 
-  hasPermission(permission: string, accessType: string = "VIEW"): boolean {
+  hasPermission(permission: string): boolean {
+    return this.hasAccess(permission, "VIEW");
+  }
+
+  hasAccess(permission: string, accessType: string): boolean {
     return this.getPermissions().some(x => x.code === permission && x.accessType === accessType);
   }
 

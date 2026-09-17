@@ -1,4 +1,5 @@
-import { HttpClient, HttpParams } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpContext } from "@angular/common/http";
+import { BACKGROUND_REQUEST } from "../core/request-activity";
 import { Injectable, inject } from "@angular/core";
 import { Observable } from "rxjs";
 import { environment } from "../../environments/environment";
@@ -32,7 +33,7 @@ export interface RolePermissionAssignment { permissionId: number; accessTypeId: 
 export interface AdministrationRole { id: number; name: string; description: string | null; isActive: boolean; permissions: RolePermissionAssignment[]; }
 export interface PermissionOption { id: number; code: string; name: string; description: string | null; }
 export interface AccessTypeOption { id: number; code: string; name: string; }
-export interface UserSession { sessionId: number; userId: number; userName: string; displayName: string; loginAt: string; logoutAt: string | null; remoteIp: string | null; userAgent: string | null; tokenExpiresAt: string | null; isActive: boolean; }
+export interface UserSession { sessionId: number; userId: number; userName: string; displayName: string; loginAt: string; logoutAt: string | null; remoteIp: string | null; userAgent: string | null; tokenExpiresAt: string | null; isActive: boolean; lastActivityAt: string; idleExpiresAt: string; status: string; }
 export interface AuditEvent { id: number; occurredAt: string; userName: string | null; action: string; entityType: string | null; entityId: string | null; description: string | null; success: boolean; correlationId: string | null; }
 export interface SaveUserRequest { empCode: string; userName: string; firstName: string; lastName: string; email: string; passportNumber: string | null; nationality: string; designation: string; isActive: boolean; mustChangePassword: boolean; roleIds: number[]; }
 export interface CreateUserRequest extends Omit<SaveUserRequest, "passportNumber"> { passportNumber: string; temporaryPassword: string; }
@@ -57,6 +58,7 @@ export class AdministrationService {
   getPermissions(): Observable<PermissionOption[]> { return this.http.get<PermissionOption[]>(`${this.baseUrl}/permissions`); }
   getAccessTypes(): Observable<AccessTypeOption[]> { return this.http.get<AccessTypeOption[]>(`${this.baseUrl}/access-types`); }
   updateRolePermissions(id: number, permissions: RolePermissionAssignment[]): Observable<AdministrationRole> { return this.http.put<AdministrationRole>(`${this.baseUrl}/roles/${id}/permissions`, { permissions }); }
-  getSessions(): Observable<UserSession[]> { return this.http.get<UserSession[]>(`${this.baseUrl}/sessions`); }
+  getSessions(): Observable<UserSession[]> { return this.http.get<UserSession[]>(`${this.baseUrl}/sessions`, { context: new HttpContext().set(BACKGROUND_REQUEST, true) }); }
+  getActiveSessionCount(): Observable<number> { return this.http.get<number>(`${this.baseUrl}/sessions/active-count`, { context: new HttpContext().set(BACKGROUND_REQUEST, true) }); }
   getAuditEvents(): Observable<AuditEvent[]> { return this.http.get<AuditEvent[]>(`${this.baseUrl}/audit-events`); }
 }

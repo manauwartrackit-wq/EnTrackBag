@@ -5,7 +5,7 @@ namespace EnTrackBag.Api.Controllers;
 
 [ApiController]
 [Route("api/device-status")]
-[Authorize(Policy = "DeviceStatus.View")]
+[Authorize(Policy = "DeviceStatus")]
 public class DeviceStatusController : ControllerBase
 {
     private readonly IDeviceStatusDomainComponent _deviceStatusDomainComponent;

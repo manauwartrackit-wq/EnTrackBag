@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EnTrackBag.Api.Controllers;
 [ApiController]
 [Route("api/bag-journey-configuration")]
-[Authorize(Roles = "Admin")]
+[Authorize(Policy = "BagJourney.Configuration")]
 public sealed class BagJourneyConfigurationController : ControllerBase
 {
     private readonly IBagJourneyConfigurationDomainComponent _domainComponent;
@@ -13,6 +13,7 @@ public sealed class BagJourneyConfigurationController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<BagJourneyConfigurationDto>> Get(CancellationToken ct) => Ok(await _domainComponent.GetAsync(ct));
     [HttpPut]
+    [Authorize(Policy = "BagJourney.Configuration:EDIT")]
     public async Task<ActionResult<BagJourneyConfigurationDto>> Update(UpdateBagJourneyConfigurationDto request, CancellationToken ct)
     {
         try { return Ok(await _domainComponent.UpdateAsync(request, ct)); }
@@ -20,4 +21,3 @@ public sealed class BagJourneyConfigurationController : ControllerBase
         catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
     }
 }
-
