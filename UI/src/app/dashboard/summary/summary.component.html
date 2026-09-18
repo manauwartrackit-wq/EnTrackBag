@@ -1,8 +1,13 @@
 <section>
-  <div class="section-heading actions-only">
+  <div class="section-heading">
+    <nav class="page-breadcrumb" aria-label="Breadcrumb">
+      <span>Dashboard</span>
+      <span class="sep">›</span>
+      <strong>Summary</strong>
+    </nav>
     <div class="view-toggle">
-      <a href="/dashboard/summary" class="selected">Summary</a>
-      <a href="/dashboard/sla">SLA</a>
+      <a routerLink="/dashboard/summary" routerLinkActive="selected">Summary</a>
+      <a routerLink="/dashboard/sla" routerLinkActive="selected">SLA</a>
     </div>
   </div>
 
