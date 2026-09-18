@@ -12,108 +12,149 @@
   @if (loading) { <div class="loading">Loading journey configuration…</div> }
 
   @if (configuration) {
-    <div class="configuration-header">
-      <div class="server-panel">
-        <div class="server-symbol">▦</div>
-        <div class="server-value">
-          <label>Current Primary Server</label>
-          <div>{{ configuration.currentPrimaryServer ?? 'Not configured' }}</div>
-        </div>
-        <div class="last-updated">
-          <span class="clock">◷</span>
-          <div>
-            <label>Last updated:</label>
-            <strong>{{ formatDate(configuration.lastUpdated) }}</strong>
+    <div class="header-row">
+      <div class="server-block">
+        <div class="server-label-row">
+          <span class="server-label">Current Primary Server</span>
+          <div class="server-ip-wrap">
+            <span class="server-ip">{{ configuration.currentPrimaryServer ?? 'Not configured' }}</span>
           </div>
         </div>
+        <p class="server-time">{{ formatDate(configuration.lastUpdated) }}</p>
       </div>
-      <div class="miss-panel">
-        <div class="miss-legend first"><span class="swatch"></span><strong>First Miss Threshold</strong></div>
-        <div class="miss-legend second"><span class="swatch"></span><strong>Second Miss Threshold</strong></div>
+      <div class="legend">
+        <div class="legend-item first">First Miss Threshold</div>
+        <div class="legend-item second">Second Miss Threshold</div>
       </div>
     </div>
 
-    <!-- Exact layout structure from original System Settings -->
-    <div class="journey-diagram">
+    <div class="diagram-wrap">
+      <div class="diagram">
+        <svg class="wires" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowhead" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
+              <polygon fill="#1e293b" points="0 0, 6 3, 0 6"></polygon>
+            </marker>
+          </defs>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="125" x2="162" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="270" x2="312" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="420" x2="462" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="570" x2="762" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="870" x2="912" y1="260" y2="260"></line>
+          <path d="M 590 260 L 590 395 L 612 395" fill="none" marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5"></path>
+          <path d="M 720 395 L 742 395 L 742 260" fill="none" stroke="#1e293b" stroke-width="1.5"></path>
+          <path d="M 612 90 L 368 90 L 368 198" fill="none" marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5"></path>
+        </svg>
 
-      <!-- ===== BHS Return Feed (top center-right) ===== -->
-      <div class="stage bhs">BHS Return<br>Feed</div>
-      <div class="pair pair-bhs">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds"><i>sec.</i></div>
+        <div class="node n-tag">Tagging Station</div>
+        <div class="node n-read">Tagging Read Point</div>
+        <div class="node n-dog-air">Dog House Airside</div>
+        <div class="node n-dog-land">Dog House Landside</div>
+        <div class="node n-bhs">BHS Return Feed</div>
+        <div class="node n-lounge">Lounge</div>
+        <div class="node n-exit">Exit Gate</div>
+        <div class="node n-recheck">Recheck Station</div>
+
+        <div class="pair pair-tag">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-read">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-dog-air">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-bhs">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-land-exit">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <span class="lbl lbl-in">IN</span>
+        <span class="lbl lbl-out">OUT</span>
+
+        <div class="pair pair-lounge-io">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-lounge-exit">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
+
+        <div class="pair pair-recheck">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
       </div>
-      <!-- L-connector: horizontal from pair to above BHS, vertical down into Dog House Airside -->
-      <svg class="wire wire-bhs" viewBox="0 0 200 130" preserveAspectRatio="none">
-        <path d="M 90 30 L 150 30 L 150 130" fill="none" stroke="#7a93b5" stroke-width="1.5"/>
-      </svg>
+    </div>
 
-      <!-- ===== MAIN ROW: 6 equal stages ===== -->
-      <div class="stage s1">Tagging Station</div>
-      <div class="stage s2">Tagging<br>Read Point</div>
-      <div class="stage s3">Dog House<br>Airside</div>
-      <div class="stage s4">Dog House<br>Landside</div>
-      <div class="stage s5">Exit Gate</div>
-      <div class="stage s6">Recheck Station</div>
-
-      <div class="arrow ar1">→</div>
-      <div class="arrow ar2">→</div>
-      <div class="arrow ar3">→</div>
-      <div class="arrow ar4">→</div>
-      <div class="arrow ar5">→</div>
-
-      <!-- Thresholds under Tagging, Read Point, Dog Air, Recheck -->
-      <div class="pair pair-s1">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').delaySeconds"><i>sec.</i></div>
-      </div>
-      <div class="pair pair-s2">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').delaySeconds"><i>sec.</i></div>
-      </div>
-      <div class="pair pair-s3">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').delaySeconds"><i>sec.</i></div>
-      </div>
-      <div class="pair pair-s6">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').delaySeconds"><i>sec.</i></div>
-      </div>
-
-      <!-- 600/360 above line between Dog Land and Exit (original position) -->
-      <div class="pair pair-land-exit">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds"><i>sec.</i></div>
-      </div>
-
-      <!-- ===== LOUNGE BRANCH (from Dog House Landside) ===== -->
-      <svg class="wire wire-lounge" viewBox="0 0 120 120" preserveAspectRatio="none">
-        <path d="M 40 0 L 40 120" fill="none" stroke="#7a93b5" stroke-width="1.5"/>
-        <path d="M 80 0 L 80 120" fill="none" stroke="#7a93b5" stroke-width="1.5"/>
-      </svg>
-      <span class="lbl in">IN</span>
-      <span class="lbl out">OUT</span>
-
-      <!-- 1800/1800 on the IN/OUT path -->
-      <div class="pair pair-lounge-io">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds"><i>sec.</i></div>
-      </div>
-
-      <div class="stage lounge">Lounge</div>
-      <div class="arrow ar-lounge">→</div>
-
-      <!-- 1200/600 to the right of Lounge -->
-      <div class="pair pair-lounge-exit">
-        <div class="t1"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds"><i>sec.</i></div>
-        <div class="t2"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds"><i>sec.</i></div>
-      </div>
-
-      <div class="diagram-footer">
-        <button type="button" (click)="save()" [disabled]="saving || !auth.hasAccess('BagJourney.Configuration', 'EDIT')">
-          Update Settings
-        </button>
-        <p>* Settings shall apply for bags from the point of Update</p>
-      </div>
+    <div class="footer">
+      <button type="button" class="btn-update"
+              (click)="save()"
+              [disabled]="saving || !auth.hasAccess('BagJourney.Configuration', 'EDIT')">
+        {{ saving ? 'Updating…' : 'Update Settings' }}
+      </button>
+      <p class="note">* Note : Settings shall apply for bags from the point of Update</p>
     </div>
   }
 </section>
