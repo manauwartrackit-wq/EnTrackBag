@@ -28,6 +28,14 @@
 
     <div class="workspace-wrapper">
       <header class="utility-topbar">
+        @if (pageTitle) {
+          <div class="page-header-title">
+            <h1>{{ pageTitle }}</h1>
+            @if (pageSubtitle) { <p>{{ pageSubtitle }}</p> }
+          </div>
+        } @else {
+          <div class="page-header-title spacer"></div>
+        }
         <div class="user-action-tray">
           <button class="icon-button" type="button" aria-label="Notifications" (click)="notifications.refresh()" [attr.title]="notifications.count() ? notifications.count() + ' SLA notifications' : 'No notifications'">
             <img [src]="notifications.count() ? 'assets/notification-active.png' : 'assets/notification-empty.png'" alt="">
