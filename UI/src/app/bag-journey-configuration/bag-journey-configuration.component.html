@@ -32,35 +32,46 @@
         <div class="miss-legend first">
           <span class="swatch"></span>
           <strong>First Miss Threshold</strong>
-          <span class="hint">(upper value on each stage)</span>
         </div>
         <div class="miss-legend second">
           <span class="swatch"></span>
           <strong>Second Miss Threshold</strong>
-          <span class="hint">(lower value on each stage)</span>
         </div>
       </div>
     </div>
 
     <div class="journey-diagram">
-      <!-- BHS Return Feed branch -->
-      <div class="bhs-branch">
-        <div class="pair-box">
-          <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds"><span>sec.</span></div>
-          <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds"><span>sec.</span></div>
+
+      <!-- ===== TOP: BHS Return Feed ===== -->
+      <div class="top-row">
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="bhs-block">
+          <div class="pair-box">
+            <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds"><span>sec.</span></div>
+            <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds"><span>sec.</span></div>
+          </div>
+          <div class="connector-down"></div>
+          <div class="stage-box">
+            <span class="ico">⌘</span>
+            <strong>BHS Return<br>Feed</strong>
+          </div>
         </div>
-        <div class="branch-line down"></div>
-        <div class="blue-node bhs">
-          <span>⌘</span>
-          <strong>BHS Return<br>Feed</strong>
+        <div class="spacer"></div>
+        <div class="top-pair">
+          <div class="pair-box">
+            <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds"><span>sec.</span></div>
+            <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds"><span>sec.</span></div>
+          </div>
         </div>
+        <div class="spacer"></div>
       </div>
 
-      <!-- Main horizontal route -->
-      <div class="main-route">
-        <div class="route-stage">
-          <div class="blue-node">
-            <span>◆</span>
+      <!-- ===== MAIN ROUTE: 6 equal stage boxes ===== -->
+      <div class="main-row">
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">◆</span>
             <strong>Tagging<br>Station</strong>
           </div>
           <div class="pair-box">
@@ -69,9 +80,11 @@
           </div>
         </div>
 
-        <div class="route-stage">
-          <div class="blue-node">
-            <span>⌁</span>
+        <div class="arrow">→</div>
+
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">⌁</span>
             <strong>Tagging<br>Read Point</strong>
           </div>
           <div class="pair-box">
@@ -80,9 +93,11 @@
           </div>
         </div>
 
-        <div class="route-stage">
-          <div class="blue-node">
-            <span>⌂</span>
+        <div class="arrow">→</div>
+
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">⌂</span>
             <strong>Dog House<br>Airside</strong>
           </div>
           <div class="pair-box">
@@ -91,27 +106,29 @@
           </div>
         </div>
 
-        <div class="route-stage dog-land">
-          <div class="blue-node">
-            <span>⌂</span>
+        <div class="arrow">→</div>
+
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">⌂</span>
             <strong>Dog House<br>Landside</strong>
           </div>
         </div>
 
-        <div class="route-stage exit-stage">
-          <div class="pair-box upper">
-            <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds"><span>sec.</span></div>
-            <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds"><span>sec.</span></div>
-          </div>
-          <div class="blue-node">
-            <span>⇥</span>
+        <div class="arrow">→</div>
+
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">⇥</span>
             <strong>Exit Gate</strong>
           </div>
         </div>
 
-        <div class="route-stage recheck-stage">
-          <div class="blue-node">
-            <span>✓</span>
+        <div class="arrow">→</div>
+
+        <div class="stage-col">
+          <div class="stage-box">
+            <span class="ico">✓</span>
             <strong>Recheck<br>Station</strong>
           </div>
           <div class="pair-box">
@@ -121,32 +138,44 @@
         </div>
       </div>
 
-      <!-- Lounge branch with IN / OUT thresholds restored -->
-      <div class="lounge-branch">
-        <span class="in-label">IN</span>
-        <span class="out-label">OUT</span>
+      <!-- ===== BOTTOM: Lounge branch ===== -->
+      <div class="bottom-row">
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
 
-        <div class="vertical-line in"></div>
-        <div class="vertical-line out"></div>
+        <div class="lounge-block">
+          <div class="lounge-connectors">
+            <div class="v-line">
+              <span class="lbl">IN</span>
+            </div>
+            <div class="v-line">
+              <span class="lbl">OUT</span>
+            </div>
+          </div>
 
-        <!-- Lounge IN/OUT dwell (was missing) -->
-        <div class="pair-box lounge-inout">
-          <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds"><span>sec.</span></div>
-          <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds"><span>sec.</span></div>
+          <div class="lounge-body">
+            <div class="pair-box">
+              <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds"><span>sec.</span></div>
+              <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds"><span>sec.</span></div>
+            </div>
+
+            <div class="stage-box lounge">
+              <span class="ico">▰</span>
+              <strong>Lounge</strong>
+            </div>
+
+            <div class="arrow-h">→</div>
+
+            <div class="pair-box">
+              <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds"><span>sec.</span></div>
+              <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds"><span>sec.</span></div>
+            </div>
+          </div>
         </div>
 
-        <div class="blue-node lounge">
-          <span>▰</span>
-          <strong>Lounge</strong>
-        </div>
-
-        <div class="horizontal-line"></div>
-
-        <!-- Lounge → Exit Gate -->
-        <div class="pair-box lounge-exit">
-          <div class="first"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds"><span>sec.</span></div>
-          <div class="second"><input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds"><span>sec.</span></div>
-        </div>
+        <div class="spacer"></div>
+        <div class="spacer"></div>
       </div>
 
       <div class="diagram-footer">
