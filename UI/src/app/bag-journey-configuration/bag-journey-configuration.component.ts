@@ -72,12 +72,10 @@ export class BagJourneyConfigurationComponent implements OnInit {
     this.successMessage = "";
 
     this.api
-      .put<
-        JourneyConfiguration,
-        { thresholds: JourneyThreshold[] }
-      >("bag-journey-configuration", {
-        thresholds: this.configuration.thresholds,
-      })
+      .put<JourneyConfiguration, { thresholds: JourneyThreshold[] }>(
+        "bag-journey-configuration",
+        { thresholds: this.configuration.thresholds }
+      )
       .subscribe({
         next: (value) => {
           this.configuration = value;
