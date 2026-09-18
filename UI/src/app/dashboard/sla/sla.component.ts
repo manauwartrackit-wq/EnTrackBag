@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { Component, OnInit, inject } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 
 @Component({
   standalone: true,
   selector: 'app-sla',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sla.component.html',
   styleUrl: './sla.component.scss'
 })
