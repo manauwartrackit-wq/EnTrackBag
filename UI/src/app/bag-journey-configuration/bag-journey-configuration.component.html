@@ -16,198 +16,133 @@
       <div class="server-block">
         <div class="server-label-row">
           <span class="server-label">Current Primary Server</span>
-          <div class="server-ip">{{ configuration.currentPrimaryServer ?? 'Not configured' }}</div>
+          <div class="server-ip-wrap">
+            <span class="server-ip">{{ configuration.currentPrimaryServer ?? 'Not configured' }}</span>
+          </div>
         </div>
-        <div class="server-time">{{ formatDate(configuration.lastUpdated) }}</div>
+        <p class="server-time">{{ formatDate(configuration.lastUpdated) }}</p>
       </div>
       <div class="legend">
-        <div class="legend-item">
-          <div class="legend-swatch yellow"></div>
-          <span class="legend-text">First Miss Threshold</span>
-        </div>
-        <div class="legend-item">
-          <div class="legend-swatch pink"></div>
-          <span class="legend-text">Second Miss Threshold</span>
-        </div>
+        <div class="legend-item first">First Miss Threshold</div>
+        <div class="legend-item second">Second Miss Threshold</div>
       </div>
     </div>
 
-    <div class="diagram">
-      <!-- BHS Return Feed -->
-      <div class="node bhs">BHS Return<br>Feed</div>
-      <div class="pair pair-bhs">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('return-feed-dog-air', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('return-feed-dog-air', 'normalSeconds', -1)">▼</button>
-          </div>
-        </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('return-feed-dog-air', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('return-feed-dog-air', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
-      <div class="line-bhs-h"></div>
-      <div class="line-bhs-v"></div>
+    <div class="diagram-wrap">
+      <div class="diagram">
+        <svg class="wires" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowhead" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
+              <polygon fill="#1e293b" points="0 0, 6 3, 0 6"></polygon>
+            </marker>
+          </defs>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="125" x2="162" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="270" x2="312" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="420" x2="462" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="570" x2="762" y1="260" y2="260"></line>
+          <line marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5" x1="870" x2="912" y1="260" y2="260"></line>
+          <path d="M 590 260 L 590 395 L 612 395" fill="none" marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5"></path>
+          <path d="M 720 395 L 742 395 L 742 260" fill="none" stroke="#1e293b" stroke-width="1.5"></path>
+          <path d="M 612 90 L 368 90 L 368 198" fill="none" marker-end="url(#arrowhead)" stroke="#1e293b" stroke-width="1.5"></path>
+        </svg>
 
-      <!-- Main stages -->
-      <div class="node n1">Tagging Station</div>
-      <div class="node n2">Tagging<br>Read Point</div>
-      <div class="node n3">Dog House<br>Airside</div>
-      <div class="node n4">Dog House<br>Landside</div>
-      <div class="node n5">Exit Gate</div>
-      <div class="node n6">Recheck Station</div>
+        <div class="node n-tag">Tagging Station</div>
+        <div class="node n-read">Tagging Read Point</div>
+        <div class="node n-dog-air">Dog House Airside</div>
+        <div class="node n-dog-land">Dog House Landside</div>
+        <div class="node n-bhs">BHS Return Feed</div>
+        <div class="node n-lounge">Lounge</div>
+        <div class="node n-exit">Exit Gate</div>
+        <div class="node n-recheck">Recheck Station</div>
 
-      <div class="arr a1">→</div>
-      <div class="arr a2">→</div>
-      <div class="arr a3">→</div>
-      <div class="arr a4">→</div>
-      <div class="arr a5">→</div>
+        <div class="pair pair-tag">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').delaySeconds" />
+            <span>sec.</span>
+          </div>
+        </div>
 
-      <div class="pair pair-n1">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('tag-read-point', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('tag-read-point', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-read">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('tag-read-point').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('tag-read-point', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('tag-read-point', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="pair pair-n2">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('read-point-dog-air', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('read-point-dog-air', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-dog-air">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('read-point-dog-air').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('read-point-dog-air', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('read-point-dog-air', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="pair pair-n3">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('dog-air-land', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('dog-air-land', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-bhs">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-air-land').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('dog-air-land', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('dog-air-land', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="pair pair-n6">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('exit-recheck', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('exit-recheck', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-land-exit">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('exit-recheck', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('exit-recheck', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
 
-      <div class="pair pair-land-exit">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('dog-land-exit', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('dog-land-exit', 'normalSeconds', -1)">▼</button>
-          </div>
-        </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('dog-land-exit', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('dog-land-exit', 'delaySeconds', -1)">▼</button>
-          </div>
-        </div>
-      </div>
-      <div class="line-land-exit"></div>
+        <span class="lbl lbl-in">IN</span>
+        <span class="lbl lbl-out">OUT</span>
 
-      <div class="line-lounge-in"></div>
-      <div class="line-lounge-out"></div>
-      <span class="lbl lbl-in">IN</span>
-      <span class="lbl lbl-out">OUT</span>
-
-      <div class="pair pair-lounge-io">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('lounge-in-out', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('lounge-in-out', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-lounge-io">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('lounge-in-out', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('lounge-in-out', 'delaySeconds', -1)">▼</button>
+
+        <div class="pair pair-lounge-exit">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds" />
+            <span>sec.</span>
+          </div>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
-      </div>
 
-      <div class="node lounge">Lounge</div>
-      <div class="arr a-lounge">→</div>
-
-      <div class="pair pair-lounge-out">
-        <div class="spin yellow">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('lounge-out-exit', 'normalSeconds', 1)">▲</button>
-            <button type="button" (click)="bump('lounge-out-exit', 'normalSeconds', -1)">▼</button>
+        <div class="pair pair-recheck">
+          <div class="spin yellow">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').normalSeconds" />
+            <span>sec.</span>
           </div>
-        </div>
-        <div class="spin pink">
-          <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').delaySeconds" />
-          <span class="spin-label">sec.</span>
-          <div class="spin-btns">
-            <button type="button" (click)="bump('lounge-out-exit', 'delaySeconds', 1)">▲</button>
-            <button type="button" (click)="bump('lounge-out-exit', 'delaySeconds', -1)">▼</button>
+          <div class="spin pink">
+            <input type="number" min="1" max="86400" [(ngModel)]="threshold('exit-recheck').delaySeconds" />
+            <span>sec.</span>
           </div>
         </div>
       </div>
@@ -219,7 +154,7 @@
               [disabled]="saving || !auth.hasAccess('BagJourney.Configuration', 'EDIT')">
         {{ saving ? 'Updating…' : 'Update Settings' }}
       </button>
-      <span class="note">* Note : Settings shall apply for bags from the point of Update</span>
+      <p class="note">* Note : Settings shall apply for bags from the point of Update</p>
     </div>
   }
 </section>
