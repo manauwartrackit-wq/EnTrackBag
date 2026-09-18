@@ -72,12 +72,10 @@ export class BagJourneyConfigurationComponent implements OnInit {
     this.successMessage = "";
 
     this.api
-      .put<
-        JourneyConfiguration,
-        { thresholds: JourneyThreshold[] }
-      >("bag-journey-configuration", {
-        thresholds: this.configuration.thresholds,
-      })
+      .put<JourneyConfiguration, { thresholds: JourneyThreshold[] }>(
+        "bag-journey-configuration",
+        { thresholds: this.configuration.thresholds }
+      )
       .subscribe({
         next: (value) => {
           this.configuration = value;
@@ -103,5 +101,16 @@ export class BagJourneyConfigurationComponent implements OnInit {
 
   threshold(code: string): JourneyThreshold {
     return this.configuration!.thresholds.find((item) => item.code === code)!;
+  }
+
+  bump(
+    code: string,
+    field: "normalSeconds" | "delaySeconds",
+    delta: number
+  ): void {
+    const t = this.threshold(code);
+    if (!t) return;
+    const next = Math.max(1, Math.min(86400, (t[field] || 0) + delta));
+    t[field] = next;
   }
 }
