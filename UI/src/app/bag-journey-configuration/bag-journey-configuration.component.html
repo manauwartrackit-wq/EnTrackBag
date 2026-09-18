@@ -24,12 +24,18 @@
 
       <div class="info-card threshold-card">
         <div class="threshold-row">
-          <span class="threshold-label"><i class="dot first"></i> First Miss Threshold</span>
-          <div class="threshold-swatch first" title="Yellow inputs = First Miss">sec.</div>
+          <span class="threshold-label"><span class="clock-sm">⏱</span> First Miss Threshold</span>
+          <div class="legend-input first">
+            <input type="text" value="" readonly tabindex="-1" aria-hidden="true" />
+            <span>sec.</span>
+          </div>
         </div>
         <div class="threshold-row">
-          <span class="threshold-label"><i class="dot second"></i> Second Miss Threshold</span>
-          <div class="threshold-swatch second" title="Pink inputs = Second Miss">sec.</div>
+          <span class="threshold-label"><span class="clock-sm">⏱</span> Second Miss Threshold</span>
+          <div class="legend-input second">
+            <input type="text" value="" readonly tabindex="-1" aria-hidden="true" />
+            <span>sec.</span>
+          </div>
         </div>
       </div>
     </div>
@@ -37,8 +43,10 @@
     <div class="flow-panel">
       <div class="flow-diagram">
         <div class="flow-top">
-          <div class="cell cell-bhs">
-            <div class="pair-card">
+          <div class="spacer"></div>
+          <div class="spacer"></div>
+          <div class="cell-bhs">
+            <div class="pair-card pair-bhs">
               <div class="spin first">
                 <input type="number" min="1" max="86400" [(ngModel)]="threshold('return-feed-dog-air').normalSeconds" />
                 <span>sec.</span>
@@ -48,12 +56,14 @@
                 <span>sec.</span>
               </div>
             </div>
-            <div class="node node-sm node-bhs">
+            <div class="bhs-line" aria-hidden="true"></div>
+            <div class="node node-bhs">
               <span class="node-icon">⇄</span>
-              <span>BHS Return Feed</span>
+              <span>BHS Return<br />Feed</span>
             </div>
           </div>
-          <div class="cell cell-land-exit-pair">
+          <div class="spacer"></div>
+          <div class="cell-land-exit">
             <div class="pair-card">
               <div class="spin first">
                 <input type="number" min="1" max="86400" [(ngModel)]="threshold('dog-land-exit').normalSeconds" />
@@ -65,13 +75,14 @@
               </div>
             </div>
           </div>
+          <div class="spacer"></div>
         </div>
 
         <div class="flow-main">
           <div class="stage">
             <div class="node">
               <span class="node-icon">◇</span>
-              <span>Tagging Station</span>
+              <span>Tagging<br />Station</span>
             </div>
             <div class="pair-card under">
               <div class="spin first">
@@ -85,12 +96,12 @@
             </div>
           </div>
 
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="arrow">→</span>
 
           <div class="stage">
             <div class="node">
               <span class="node-icon">⌁</span>
-              <span>Tagging Read Point</span>
+              <span>Tagging<br />Read Point</span>
             </div>
             <div class="pair-card under">
               <div class="spin first">
@@ -104,13 +115,13 @@
             </div>
           </div>
 
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="arrow">→</span>
 
           <div class="stage stage-air">
-            <div class="bhs-connector" aria-hidden="true"></div>
+            <div class="drop-line" aria-hidden="true"></div>
             <div class="node">
               <span class="node-icon">⌂</span>
-              <span>Dog House Airside</span>
+              <span>Dog House<br />Airside</span>
             </div>
             <div class="pair-card under">
               <div class="spin first">
@@ -124,15 +135,15 @@
             </div>
           </div>
 
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="arrow">→</span>
 
-          <div class="stage stage-wide">
+          <div class="stage stage-land">
             <div class="node node-lg">
               <span class="node-icon">⌂</span>
-              <span>Dog House Landside</span>
+              <span>Dog House<br />Landside</span>
             </div>
             <div class="lounge-branch">
-              <div class="lounge-arrows">
+              <div class="io-pair">
                 <div class="io">
                   <span class="io-label">IN</span>
                   <span class="io-line"></span>
@@ -142,12 +153,22 @@
                   <span class="io-line"></span>
                 </div>
               </div>
+              <div class="pair-card pair-lounge-io">
+                <div class="spin first">
+                  <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds" />
+                  <span>sec.</span>
+                </div>
+                <div class="spin second">
+                  <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds" />
+                  <span>sec.</span>
+                </div>
+              </div>
               <div class="lounge-row">
                 <div class="node node-lounge">
                   <span class="node-icon">▭</span>
                   <span>Lounge</span>
                 </div>
-                <span class="arrow" aria-hidden="true">→</span>
+                <span class="arrow sm">→</span>
                 <div class="pair-card">
                   <div class="spin first">
                     <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-out-exit').normalSeconds" />
@@ -159,34 +180,24 @@
                   </div>
                 </div>
               </div>
-              <div class="pair-card lounge-io-pair">
-                <div class="spin first">
-                  <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').normalSeconds" />
-                  <span>sec.</span>
-                </div>
-                <div class="spin second">
-                  <input type="number" min="1" max="86400" [(ngModel)]="threshold('lounge-in-out').delaySeconds" />
-                  <span>sec.</span>
-                </div>
-              </div>
             </div>
           </div>
 
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="arrow">→</span>
 
-          <div class="stage stage-wide">
+          <div class="stage">
             <div class="node node-lg">
               <span class="node-icon">↦</span>
               <span>Exit Gate</span>
             </div>
           </div>
 
-          <span class="arrow" aria-hidden="true">→</span>
+          <span class="arrow">→</span>
 
           <div class="stage">
             <div class="node">
               <span class="node-icon">✓</span>
-              <span>Recheck Station</span>
+              <span>Recheck<br />Station</span>
             </div>
             <div class="pair-card under">
               <div class="spin first">
