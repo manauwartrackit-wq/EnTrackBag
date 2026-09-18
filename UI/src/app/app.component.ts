@@ -1,10 +1,12 @@
-import { Component, HostListener } from "@angular/core";
+import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import {
+  NavigationEnd,
   Router,
   RouterLink,
   RouterLinkActive,
   RouterOutlet,
 } from "@angular/router";
+import { filter, Subscription } from "rxjs";
 import { AuthService } from "./services/auth.service";
 import { NotificationService } from "./services/notification.service";
 
@@ -15,8 +17,12 @@ import { NotificationService } from "./services/notification.service";
   templateUrl: "./app.component.html",
   styleUrl: "./app.component.scss",
 })
-export class AppComponent {
+export class AppComponent implements OnInit, OnDestroy {
   accountMenuOpen = false;
+  pageTitle = "";
+  pageSubtitle = "";
+
+  private routeSub?: Subscription;
 
   constructor(
     public auth: AuthService,
@@ -24,6 +30,28 @@ export class AppComponent {
     private _router: Router,
   ) {
     if (this.auth.isAuthenticated()) this.notifications.refresh();
+  }
+
+  ngOnInit(): void {
+    this.updatePageTitle();
+    this.routeSub = this._router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.updatePageTitle());
+  }
+
+  ngOnDestroy(): void {
+    this.routeSub?.unsubscribe();
+  }
+
+  /** Read title/subtitle from the deepest activated route snapshot. */
+  private updatePageTitle(): void {
+    let route = this._router.routerState.snapshot.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    const data = route.data ?? {};
+    this.pageTitle = (data["title"] as string) ?? "";
+    this.pageSubtitle = (data["subtitle"] as string) ?? "";
   }
 
   public isLoginView(): boolean {
@@ -49,12 +77,22 @@ export class AppComponent {
     this.accountMenuOpen = !this.accountMenuOpen;
   }
 
-  public get roleLabel(): string { return this.auth.getRoles().join(", ") || "Authenticated user"; }
+  public get roleLabel(): string {
+    return this.auth.getRoles().join(", ") || "Authenticated user";
+  }
+
   public get sessionExpiry(): string {
     const value = this.auth.getExpiresAt();
-    return value ? new Intl.DateTimeFormat("en-AE", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "—";
+    return value
+      ? new Intl.DateTimeFormat("en-AE", {
+          dateStyle: "medium",
+          timeStyle: "short",
+        }).format(new Date(value))
+      : "—";
   }
 
   @HostListener("document:click")
-  public closeAccountMenu(): void { this.accountMenuOpen = false; }
+  public closeAccountMenu(): void {
+    this.accountMenuOpen = false;
+  }
 }
