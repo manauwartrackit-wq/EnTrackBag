@@ -1,13 +1,12 @@
 import { Component, HostListener, OnDestroy, OnInit } from "@angular/core";
 import {
-  ActivatedRoute,
   NavigationEnd,
   Router,
   RouterLink,
   RouterLinkActive,
   RouterOutlet,
 } from "@angular/router";
-import { filter, map, Subscription } from "rxjs";
+import { filter, Subscription } from "rxjs";
 import { AuthService } from "./services/auth.service";
 import { NotificationService } from "./services/notification.service";
 
@@ -29,35 +28,30 @@ export class AppComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     public notifications: NotificationService,
     private _router: Router,
-    private _route: ActivatedRoute,
   ) {
     if (this.auth.isAuthenticated()) this.notifications.refresh();
   }
 
   ngOnInit(): void {
+    this.updatePageTitle();
     this.routeSub = this._router.events
-      .pipe(
-        filter((e): e is NavigationEnd => e instanceof NavigationEnd),
-        map(() => {
-          let r: ActivatedRoute = this._route;
-          while (r.firstChild) r = r.firstChild;
-          return r.snapshot.data ?? {};
-        }),
-      )
-      .subscribe((data) => {
-        this.pageTitle = (data["title"] as string) ?? "";
-        this.pageSubtitle = (data["subtitle"] as string) ?? "";
-      });
-
-    let r: ActivatedRoute = this._route;
-    while (r.firstChild) r = r.firstChild;
-    const data = r.snapshot.data ?? {};
-    this.pageTitle = (data["title"] as string) ?? "";
-    this.pageSubtitle = (data["subtitle"] as string) ?? "";
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.updatePageTitle());
   }
 
   ngOnDestroy(): void {
     this.routeSub?.unsubscribe();
+  }
+
+  /** Read title/subtitle from the deepest activated route snapshot. */
+  private updatePageTitle(): void {
+    let route = this._router.routerState.snapshot.root;
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    const data = route.data ?? {};
+    this.pageTitle = (data["title"] as string) ?? "";
+    this.pageSubtitle = (data["subtitle"] as string) ?? "";
   }
 
   public isLoginView(): boolean {
